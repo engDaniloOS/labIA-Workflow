@@ -36,5 +36,13 @@ namespace labIA_Workflow.Tools.Mock
 
             return string.Join(", ", produtos.Select(p => $"{p.Nome}: R${p.Preco}"));
         }
+
+        [Description("Lista todos os produtos disponíveis no estoque, com quantidade e preço.")]
+        public string ListarProdutos()
+        {
+            var produtos = Estoque.GetProdutos();
+
+            return string.Join(", ", produtos.Select(p => $"{p.Nome} (estoque: {p.Quantidade}, R${p.Preco})"));
+        }
     }
 }

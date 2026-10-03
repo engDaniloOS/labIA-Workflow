@@ -26,7 +26,8 @@ namespace labIA_Workflow.Agents
                 [
                     AIFunctionFactory.Create(estoqueService.ConsultarEstoque),
                     AIFunctionFactory.Create(estoqueService.ConsultarPreco),
-                    AIFunctionFactory.Create(estoqueService.ConsultarProdutosPorLimiteDePreco)
+                    AIFunctionFactory.Create(estoqueService.ConsultarProdutosPorLimiteDePreco),
+                    AIFunctionFactory.Create(estoqueService.ListarProdutos)
                 ]);
         }
     }
