@@ -15,20 +15,30 @@ namespace labIA_Workflow.Agents
         Sempre finalize as suas resposta, questionando o usuário se ele deseja consultar outro produto, ou mais informações sobre o produto já consultado.
         """;
 
+        private const float Temperature = 0.3f;
+
         public static AIAgent Create(IChatClient chatClient)
         {
             var estoqueService = new EstoqueTool();
 
-            return chatClient.AsAIAgent(
-                instructions: Instructions,
-                name: "AnalistaEstoque",
-                tools:
-                [
-                    AIFunctionFactory.Create(estoqueService.ConsultarEstoque),
-                    AIFunctionFactory.Create(estoqueService.ConsultarPreco),
-                    AIFunctionFactory.Create(estoqueService.ConsultarProdutosPorLimiteDePreco),
-                    AIFunctionFactory.Create(estoqueService.ListarProdutos)
-                ]);
+            var options = new ChatClientAgentOptions
+            {
+                Name = "AnalistaEstoque",
+                ChatOptions = new ChatOptions
+                {
+                    Instructions = Instructions,
+                    Temperature = Temperature,
+                    Tools =
+                    [
+                        AIFunctionFactory.Create(estoqueService.ConsultarEstoque),
+                        AIFunctionFactory.Create(estoqueService.ConsultarPreco),
+                        AIFunctionFactory.Create(estoqueService.ConsultarProdutosPorLimiteDePreco),
+                        AIFunctionFactory.Create(estoqueService.ListarProdutos)
+                    ]
+                }
+            };
+
+            return chatClient.AsAIAgent(options);
         }
     }
 }
