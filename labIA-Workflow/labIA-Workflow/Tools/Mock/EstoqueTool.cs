@@ -1,4 +1,5 @@
-﻿using System.ComponentModel;
+﻿using labIA_Workflow.Models;
+using System.ComponentModel;
 
 namespace labIA_Workflow.Tools.Mock
 {
@@ -7,15 +8,10 @@ namespace labIA_Workflow.Tools.Mock
         [Description("Retorna caracteristicas do estoque de um produto.")]
         public string ConsultarEstoque([Description("Nome do produto, ex: mouse, teclado, monitor")] string produto)
         {
-            var estoque = new Dictionary<string, int>
-            {
-                { "mouse", 10 },
-                { "teclado", 5 },
-                { "monitor", 0 }
-            };
-
-            if (estoque.TryGetValue(produto.ToLower(), out int quantidade))
-                return $"O estoque do {produto} é: {quantidade}";
+            var item = Estoque.GetProdutoByName(produto);
+        
+            if (item != null)
+                return $"O estoque do {produto} é: {item.Quantidade}";
 
             return $"Produto {produto} não encontrado no estoque.";
         }
@@ -24,17 +20,21 @@ namespace labIA_Workflow.Tools.Mock
         public string ConsultarPreco(
             [Description("Nome do produto, ex: mouse, teclado, monitor")] string produto)
         {
-            var precos = new Dictionary<string, double>
-            {
-                { "mouse", 19.99d },
-                { "teclado", 29.99d },
-                { "monitor", 1139.99d }
-            };
+            var item = Estoque.GetProdutoByName(produto);
 
-            if (precos.TryGetValue(produto.ToLower(), out double preco))
-                return $"O preço do {produto} é: R${preco}";
+            if (item != null)
+                return $"O preço do {produto} é: R${item.Preco}";
 
             return $"Produto {produto} não encontrado na lista de preços.";
+        }
+
+        [Description("Retorna produtos com preço até o valor informado.")]
+        public string ConsultarProdutosPorLimiteDePreco(
+            [Description("Limite de preço")] double preco)
+        {
+            var produtos = Estoque.GetProdutoUpToPreco(preco);
+
+            return string.Join(", ", produtos.Select(p => $"{p.Nome}: R${p.Preco}"));
         }
     }
 }

@@ -9,6 +9,9 @@ namespace labIA_Workflow.Agents
         private const string Instructions = """
         Você é um analista de estoque. Use as ferramentas disponíveis para consultar
         quantidade e preço de produtos, e responda ao usuário com base nos resultados obtidos.
+        Se o produto não for encontrado, informe ao usuário que o produto não está disponível.
+        Não invente informações sobre produtos que não existem.
+        Se o usuário pedir a lista com todos os produtos, diga que tem varios, e de apenas 2 como exemplo, com os seus detalhes.
         Sempre finalize as suas resposta, questionando o usuário se ele deseja consultar outro produto, ou mais informações sobre o produto já consultado.
         """;
 
@@ -22,7 +25,8 @@ namespace labIA_Workflow.Agents
                 tools:
                 [
                     AIFunctionFactory.Create(estoqueService.ConsultarEstoque),
-                    AIFunctionFactory.Create(estoqueService.ConsultarPreco)
+                    AIFunctionFactory.Create(estoqueService.ConsultarPreco),
+                    AIFunctionFactory.Create(estoqueService.ConsultarProdutosPorLimiteDePreco)
                 ]);
         }
     }

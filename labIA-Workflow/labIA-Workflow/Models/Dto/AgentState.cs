@@ -1,6 +1,6 @@
 using Microsoft.Extensions.AI;
 
-namespace labIA_Workflow.Dto
+namespace labIA_Workflow.Models.Dto
 {
     public class AgentState
     {
