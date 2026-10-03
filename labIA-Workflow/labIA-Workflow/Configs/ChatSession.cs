@@ -4,7 +4,7 @@ namespace labIA_Workflow.Configs
 {
     public class ChatSession
     {
-        private const int historyWindowSize = 50;
+        private const int historyWindowSize = 20;
         private readonly List<ChatMessage> _messages = [];
 
         public IReadOnlyList<ChatMessage> Messages => _messages;

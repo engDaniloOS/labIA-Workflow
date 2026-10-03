@@ -2,12 +2,13 @@
 using labIA_Workflow.Configs;
 
 var chat = ChatClientFactory.BuildClient();
-var agent = GeneralAgent.Create(chat);
+var agent = EstoqueAgent.Create(chat);
 var session = new ChatSession();
+
+Console.WriteLine("Gostaria de saber algo sobre algum item do estoque?");
 
 while (true)
 {
-    Console.WriteLine("Gostaria de saber algo sobre algum item do estoque?");
     string command = Console.ReadLine() ?? "";
 
     if (string.Equals(command, "exit", StringComparison.OrdinalIgnoreCase))

@@ -4,11 +4,12 @@ using Microsoft.Extensions.AI;
 
 namespace labIA_Workflow.Agents
 {
-    public static class GeneralAgent
+    public static class EstoqueAgent
     {
         private const string Instructions = """
         Você é um analista de estoque. Use as ferramentas disponíveis para consultar
         quantidade e preço de produtos, e responda ao usuário com base nos resultados obtidos.
+        Sempre finalize as suas resposta, questionando o usuário se ele deseja consultar outro produto, ou mais informações sobre o produto já consultado.
         """;
 
         public static AIAgent Create(IChatClient chatClient)
