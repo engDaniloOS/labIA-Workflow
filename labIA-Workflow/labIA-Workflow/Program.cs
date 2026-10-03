@@ -11,6 +11,9 @@ while (true)
 {
     string command = Console.ReadLine() ?? "";
 
+    if (string.IsNullOrWhiteSpace(command))
+        continue;
+
     if (string.Equals(command, "exit", StringComparison.OrdinalIgnoreCase))
         break;
 
