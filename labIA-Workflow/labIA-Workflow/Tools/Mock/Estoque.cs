@@ -1,4 +1,4 @@
-﻿namespace labIA_Workflow.Models
+﻿namespace labIA_Workflow.Tools.Mock
 {
     public static class Estoque
     {
@@ -12,9 +12,7 @@
 
         public static IEnumerable<Produto> GetProdutoUpToPreco(double preco)
         {
-            return GetProdutos()
-                .Where(p => p.Preco <= preco)
-                .ToList();
+            return [.. GetProdutos().Where(p => p.Preco <= preco)];
         }
 
         public static List<Produto> GetProdutos()
