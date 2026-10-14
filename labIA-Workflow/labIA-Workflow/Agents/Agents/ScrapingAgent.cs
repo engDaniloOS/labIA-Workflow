@@ -3,7 +3,7 @@ using GeminiDotnet.V1Beta.CachedContents;
 using Microsoft.Agents.AI;
 using Microsoft.Extensions.AI;
 
-namespace labIA_Workflow.Agents
+namespace labIA_Workflow.Agents.Agents
 {
     public static class ScrapingAgent
     {
