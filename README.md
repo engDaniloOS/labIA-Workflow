@@ -37,6 +37,37 @@ labIA-Workflow/
 
 ---
 
+## 🧭 Fluxo do Workflow
+
+Grafo atual (gerado via `WorkflowVisualizer.ToMermaidString`, a partir do `Workflow` real montado em `Program.cs`):
+
+```mermaid
+flowchart TD
+  SessaoExecutor["SessaoExecutor (Start)"];
+  RespostaMemoriaExecutor["RespostaMemoriaExecutor"];
+  EstoqueExecutor["EstoqueExecutor"];
+  RespostaEstoqueExecutor["RespostaEstoqueExecutor"];
+  ConfirmarBuscaMercadoLivre["ConfirmarBuscaMercadoLivre"];
+  WebSearchExecutor["WebSearchExecutor"];
+  RespostaNaoEncontradoExecutor["RespostaNaoEncontradoExecutor"];
+  ScrapingExecutor["ScrapingExecutor"];
+  SessaoExecutor -. conditional .-> RespostaMemoriaExecutor;
+  SessaoExecutor -. conditional .-> EstoqueExecutor;
+  EstoqueExecutor -. conditional .-> RespostaEstoqueExecutor;
+  EstoqueExecutor -. conditional .-> ConfirmarBuscaMercadoLivre;
+  ConfirmarBuscaMercadoLivre -. conditional .-> WebSearchExecutor;
+  ConfirmarBuscaMercadoLivre -. conditional .-> RespostaNaoEncontradoExecutor;
+  WebSearchExecutor --> ScrapingExecutor;
+```
+
+- **SessaoExecutor** consulta primeiro o histórico da conversa (`ChatSession`) — se a pergunta já foi respondida antes, responde direto (`RespostaMemoriaExecutor`).
+- Caso contrário, **EstoqueExecutor** verifica o estoque local. Se disponível, responde direto (`RespostaEstoqueExecutor`).
+- Se **não** disponível, entra o human-in-the-loop (`ConfirmarBuscaMercadoLivre`): pergunta ao usuário se deseja buscar no Mercado Livre.
+  - **Sim** → `WebSearchExecutor` (acha o anúncio) → `ScrapingExecutor` (extrai preço/avaliação/descrição da página real).
+  - **Não** → `RespostaNaoEncontradoExecutor` (encerra informando que não buscou).
+
+---
+
 ## 🛠️ Tecnologias
 
 | Item | Stack |
