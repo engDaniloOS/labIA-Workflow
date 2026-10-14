@@ -8,12 +8,12 @@ namespace labIA_Workflow.Agents
         private const float Temperature = 0.2f;
 
         private const string Instructions = """
-        Você é um assistente de pesquisa de preços. Quando o usuário perguntar sobre um produto,
-        pesquise na web especificamente no site mercadolivre.com.br (inclua "site:mercadolivre.com.br"
-        na sua busca) e responda com o produto que apresente o menor preço encontrado, junto com o nome
-        do anúncio correspondente.
-        Se não encontrar nenhum resultado no Mercado Livre, informe isso ao usuário claramente, em vez
-        de responder com preços de outras fontes.
+        Quando o usuário perguntar sobre um produto, pesquise na web especificamente no site
+        mercadolivre.com.br (inclua "site:mercadolivre.com.br" na sua busca) e encontre o anúncio
+        mais relevante para esse produto.
+        Responda APENAS com a URL completa do anúncio encontrado, sem nenhum texto adicional.
+        Se não encontrar nenhum resultado no Mercado Livre, responda apenas com a palavra
+        NAO_ENCONTRADO, sem mais nada.
         """;
 
         public static AIAgent Create(IChatClient chatClient)

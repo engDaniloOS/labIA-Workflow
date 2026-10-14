@@ -12,24 +12,22 @@ internal class Program
         var chat = ChatClientFactory.BuildClient();
 
         var estoqueExecutor = new EstoqueExecutor(EstoqueAgent.Create(chat));
-        var disponibilidadeExecutor = new DisponibilidadeExecutor(AnaliseDisponibilidadeAgent.Create(chat));
         var respostaEstoqueExecutor = new RespostaEstoqueExecutor();
         var webSearchExecutor = new WebSearchExecutor(WebSearchEstoqueAgent.Create(chat));
+        var scrapingExecutor = new ScrapingExecutor(ScrapingAgent.Create(chat));
 
         Workflow BuildWorkflow() =>
             new WorkflowBuilder(estoqueExecutor)
                 .AddEdge(
                     estoqueExecutor,
-                    disponibilidadeExecutor)
-                .AddEdge(
-                    disponibilidadeExecutor,
                     respostaEstoqueExecutor,
                     condition: (DisponibilidadeResultado? resultado) => resultado?.Disponivel == true)
                 .AddEdge(
-                    disponibilidadeExecutor,
+                    estoqueExecutor,
                     webSearchExecutor,
                     condition: (DisponibilidadeResultado? resultado) => resultado?.Disponivel == false)
-                .WithOutputFrom([respostaEstoqueExecutor, webSearchExecutor])
+                .AddEdge(webSearchExecutor, scrapingExecutor)
+                .WithOutputFrom([respostaEstoqueExecutor, scrapingExecutor])
                 .Build();
 
         var session = new ChatSession();
