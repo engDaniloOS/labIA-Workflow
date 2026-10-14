@@ -18,6 +18,8 @@ internal class Program
         var respostaMemoriaExecutor = new RespostaMemoriaExecutor();
         var estoqueExecutor = new EstoqueExecutor(EstoqueAgent.Create(chat));
         var respostaEstoqueExecutor = new RespostaEstoqueExecutor();
+        var confirmacaoBuscaPort = RequestPort.Create<DisponibilidadeResultado, ConfirmacaoBusca>("ConfirmarBuscaMercadoLivre");
+        var respostaNaoEncontradoExecutor = new RespostaNaoEncontradoExecutor();
         var webSearchExecutor = new WebSearchExecutor(WebSearchEstoqueAgent.Create(chat));
         var scrapingExecutor = new ScrapingExecutor(ScrapingAgent.Create(chat));
 
@@ -37,10 +39,26 @@ internal class Program
                     condition: (DisponibilidadeResultado? resultado) => resultado?.Disponivel == true)
                 .AddEdge(
                     estoqueExecutor,
-                    webSearchExecutor,
+                    confirmacaoBuscaPort,
                     condition: (DisponibilidadeResultado? resultado) => resultado?.Disponivel == false)
-                .AddEdge(webSearchExecutor, scrapingExecutor)
-                .WithOutputFrom([respostaMemoriaExecutor, respostaEstoqueExecutor, scrapingExecutor])
+                .AddEdge(
+                    confirmacaoBuscaPort,
+                    webSearchExecutor,
+                    condition: (ConfirmacaoBusca? resultado) => resultado?.Confirmado == true)
+                .AddEdge(
+                    confirmacaoBuscaPort,
+                    respostaNaoEncontradoExecutor,
+                    condition: (ConfirmacaoBusca? resultado) => resultado?.Confirmado == false)
+                .AddEdge(
+                    webSearchExecutor, 
+                    scrapingExecutor)
+                .WithOutputFrom(
+                [
+                    respostaMemoriaExecutor, 
+                    respostaEstoqueExecutor, 
+                    respostaNaoEncontradoExecutor, 
+                    scrapingExecutor
+                ])
                 .Build();
 
         Console.WriteLine("Gostaria de saber algo sobre algum item do estoque?");
@@ -72,15 +90,29 @@ internal class Program
 
             await foreach (var evt in run.WatchStreamAsync(cancellationToken: default))
             {
-                if (evt is AgentResponseUpdateEvent updateEvent)
+                if (evt is RequestInfoEvent requestEvent)
+                {
+                    requestEvent.Request.TryGetDataAs<DisponibilidadeResultado>(out var contexto);
+
+                    Console.Write("Deseja que eu busque esse produto no Mercado Livre? (s/n): ");
+
+                    var resposta = Console.ReadLine() ?? "";
+
+                    var confirmado = string.Equals(resposta, "s", StringComparison.OrdinalIgnoreCase)
+                        || string.Equals(resposta, "sim", StringComparison.OrdinalIgnoreCase);
+
+                    var respostaHumano = requestEvent.Request.CreateResponse(
+                        new ConfirmacaoBusca(confirmado, contexto?.RespostaEstoque ?? ""));
+
+                    await run.SendResponseAsync(respostaHumano);
+                }
+                else if (evt is AgentResponseUpdateEvent updateEvent)
                 {
                     Console.Write(updateEvent.Update.Text);
                     responseBuilder.Append(updateEvent.Update.Text);
                 }
-                // Ramos sem streaming (ex: resposta vinda da memória da sessão) não emitem
-                // AgentResponseUpdateEvent — usamos o WorkflowOutputEvent "puro" como fallback,
-                // só quando nada foi streamado ainda, pra não duplicar o texto nos ramos que já streamam.
-                else if (evt is WorkflowOutputEvent outputEvent && responseBuilder.Length == 0)
+                else if (evt is WorkflowOutputEvent outputEvent
+                    && outputEvent.ExecutorId is not ("RespostaEstoqueExecutor" or "ScrapingExecutor"))
                 {
                     var texto = outputEvent.As<string>();
                     Console.Write(texto);

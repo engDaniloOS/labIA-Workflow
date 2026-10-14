@@ -7,7 +7,7 @@ namespace labIA_Workflow.Agents.Executors
 {
     public class WebSearchExecutor(AIAgent _agent) : Executor("WebSearchExecutor")
     {
-        public async ValueTask<string> HandleAsync(DisponibilidadeResultado resultado, IWorkflowContext context, CancellationToken cancellationToken = default)
+        public async ValueTask<string> HandleAsync(ConfirmacaoBusca resultado, IWorkflowContext context, CancellationToken cancellationToken = default)
         {
             var response = await _agent.RunAsync(
                 new ChatMessage(ChatRole.User, resultado.RespostaEstoque),
@@ -19,7 +19,7 @@ namespace labIA_Workflow.Agents.Executors
         protected override ProtocolBuilder ConfigureProtocol(ProtocolBuilder protocolBuilder)
         {
             protocolBuilder.ConfigureRoutes(
-                builder => builder.AddHandler<DisponibilidadeResultado, string>(HandleAsync));
+                builder => builder.AddHandler<ConfirmacaoBusca, string>(HandleAsync));
 
             return protocolBuilder;
         }
