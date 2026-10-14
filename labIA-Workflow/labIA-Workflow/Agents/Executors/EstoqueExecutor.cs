@@ -10,7 +10,15 @@ namespace labIA_Workflow.Agents.Executors
     {
         public async ValueTask<DisponibilidadeResultado> HandleAsync(ChatMessage message, IWorkflowContext context, CancellationToken cancellationToken = default)
         {
-            var response = await _agent.RunAsync(message, cancellationToken: cancellationToken);
+            var updates = new List<AgentResponseUpdate>();
+
+            await foreach (var update in _agent.RunStreamingAsync(message, cancellationToken: cancellationToken))
+            {
+                await context.AddEventAsync(new AgentResponseUpdateEvent(Id, update), cancellationToken);
+                updates.Add(update);
+            }
+
+            var response = updates.ToAgentResponse();
 
             return new DisponibilidadeResultado(ResolveDisponibilidade(response), response.Text);
         }

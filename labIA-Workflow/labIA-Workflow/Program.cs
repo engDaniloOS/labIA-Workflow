@@ -4,6 +4,7 @@ using labIA_Workflow.Configs;
 using labIA_Workflow.Models.Dto;
 using Microsoft.Agents.AI.Workflows;
 using Microsoft.Extensions.AI;
+using System.Text;
 
 internal class Program
 {
@@ -48,16 +49,31 @@ internal class Program
             session.AddUserMessage(command);
 
             var userMessage = new ChatMessage(ChatRole.User, command);
-            var run = await InProcessExecution.RunAsync(BuildWorkflow(), userMessage, cancellationToken: default);
 
-            var responseText = run.NewEvents
-                .OfType<WorkflowOutputEvent>()
-                .Select(e => e.As<string>())
-                .FirstOrDefault() ?? "Não encontrei resultados. Tente novamente.";
+            await using var run = 
+                await InProcessExecution.RunStreamingAsync(
+                    BuildWorkflow(), 
+                    userMessage, 
+                    cancellationToken: default);
+
+            await run.TrySendMessageAsync(new TurnToken(emitEvents: true));
+
+            var responseBuilder = new StringBuilder();
+
+            await foreach (var evt in run.WatchStreamAsync(cancellationToken: default))
+                if (evt is AgentResponseUpdateEvent updateEvent)
+                {
+                    Console.Write(updateEvent.Update.Text);
+                    responseBuilder.Append(updateEvent.Update.Text);
+                }
+
+            Console.WriteLine();
+
+            var responseText = responseBuilder.Length > 0
+                ? responseBuilder.ToString()
+                : "Não encontrei resultados. Tente novamente.";
 
             session.AddAssistantMessage(responseText);
-
-            Console.WriteLine(responseText);
         }
     }
 }

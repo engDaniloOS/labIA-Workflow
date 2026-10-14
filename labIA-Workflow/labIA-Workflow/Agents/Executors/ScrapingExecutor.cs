@@ -1,3 +1,4 @@
+using System.Text;
 using Microsoft.Agents.AI;
 using Microsoft.Agents.AI.Workflows;
 using Microsoft.Extensions.AI;
@@ -11,11 +12,15 @@ namespace labIA_Workflow.Agents.Executors
             if (!Uri.TryCreate(url, UriKind.Absolute, out _))
                 return "Não encontrei nenhum anúncio correspondente no Mercado Livre.";
 
-            var response = await _agent.RunAsync(
-                new ChatMessage(ChatRole.User, url),
-                cancellationToken: cancellationToken);
+            var textoResposta = new StringBuilder();
 
-            return response.Text;
+            await foreach (var update in _agent.RunStreamingAsync(new ChatMessage(ChatRole.User, url), cancellationToken: cancellationToken))
+            {
+                await context.AddEventAsync(new AgentResponseUpdateEvent(Id, update), cancellationToken);
+                textoResposta.Append(update.Text);
+            }
+
+            return textoResposta.ToString();
         }
 
         protected override ProtocolBuilder ConfigureProtocol(ProtocolBuilder protocolBuilder)
