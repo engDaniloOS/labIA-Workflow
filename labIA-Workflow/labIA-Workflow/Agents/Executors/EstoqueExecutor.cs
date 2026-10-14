@@ -8,11 +8,11 @@ namespace labIA_Workflow.Agents.Executors
 {
     public class EstoqueExecutor(AIAgent _agent) : Executor("EstoqueExecutor")
     {
-        public async ValueTask<DisponibilidadeResultado> HandleAsync(ChatMessage message, IWorkflowContext context, CancellationToken cancellationToken = default)
+        public async ValueTask<DisponibilidadeResultado> HandleAsync(MemoriaResultado contexto, IWorkflowContext context, CancellationToken cancellationToken = default)
         {
             var updates = new List<AgentResponseUpdate>();
 
-            await foreach (var update in _agent.RunStreamingAsync(message, cancellationToken: cancellationToken))
+            await foreach (var update in _agent.RunStreamingAsync(contexto.Pergunta, cancellationToken: cancellationToken))
             {
                 await context.AddEventAsync(new AgentResponseUpdateEvent(Id, update), cancellationToken);
                 updates.Add(update);
@@ -50,7 +50,7 @@ namespace labIA_Workflow.Agents.Executors
         protected override ProtocolBuilder ConfigureProtocol(ProtocolBuilder protocolBuilder)
         {
             protocolBuilder.ConfigureRoutes(
-                builder => builder.AddHandler<ChatMessage, DisponibilidadeResultado>(HandleAsync));
+                builder => builder.AddHandler<MemoriaResultado, DisponibilidadeResultado>(HandleAsync));
 
             return protocolBuilder;
         }
